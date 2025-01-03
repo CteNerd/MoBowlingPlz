@@ -42,6 +42,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: List files in terraform directory
+        run: ls -la terraform
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
         with:
