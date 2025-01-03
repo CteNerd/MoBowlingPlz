@@ -56,5 +56,14 @@ export const getBackendApplicationHealth = async () => {
       throw new Error('Email already exists');
     }
   };
+  
+  export const getGames = async () => {
+    try {
+      const response = await apiClient.get(`/api/games`);
+      return response.data;
+    } catch (error) {
+      throw new Error('Error fetching games');
+    }
+  };
 
 export default apiClient;

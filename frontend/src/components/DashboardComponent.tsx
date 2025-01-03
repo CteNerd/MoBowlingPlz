@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getGames } from '../api/apiClient';
 
 interface Game {
   id: number;
@@ -15,14 +16,13 @@ const DashboardComponent: React.FC = () => {
 
   useEffect(() => {
     // Fetch upcoming games or tournaments from an API
-    // const fetchGames = async () => {
-    //   // Replace with actual API call
-    //   const response = await fetch('/api/games');
-    //   const data = await response.json();
-    //   setGames(data);
-    // };
+    const fetchGames = async () => {
+      // Replace with actual API call
+      const data = await getGames();
+      setGames(data);
+    };
 
-    // fetchGames();
+    fetchGames();
   }, []);
 
   const handleRegister = (gameId: number) => {
