@@ -1,0 +1,6 @@
+@MoBowlingPlz.WebApi_HostAddress = http://localhost:8080
+
+GET {{MoBowlingPlz.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
