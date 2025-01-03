@@ -48,7 +48,7 @@ jobs:
           terraform_version: 1.0.0
 
       - name: Terraform Init
-        run: terraform init -backend-config="path/to/backend/config" -chdir=terraform
+        run: terraform init -chdir=terraform
 
       - name: Terraform Plan
         run: terraform plan -chdir=terraform
