@@ -1,10 +1,11 @@
 provider "aws" {
-  region = "us-west-2"
+  profile = "default"
+  region = "us-east-1"
 }
 
 # S3 Bucket for Terraform State
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = "mbp_app_terraform_bucket"
+  bucket = "mbp-app-terraform-bucket"
   acl    = "private"
 }
 
@@ -50,9 +51,9 @@ variable "db_password" {
 
 terraform {
   backend "s3" {
-    bucket = "mbp_app_terraform_bucket"
+    bucket = "mbp-app-terraform-bucket"
     key    = "path/to/my/key"
-    region = "us-west-2"
+    region = "us-east-1"
   }
 }
 
