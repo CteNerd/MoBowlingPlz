@@ -1,6 +1,6 @@
 provider "aws" {
   profile = "default"
-  region = "us-east-1"
+  region  = "us-east-1"
 }
 
 # S3 Bucket for Terraform State
@@ -32,7 +32,7 @@ resource "aws_db_instance" "mbp_db" {
   engine               = "postgres"
   engine_version       = "13.3"
   instance_class       = "db.t2.micro"
-  name                 = "mbp_app"
+  identifier           = "mbp_app"
   username             = "mbp_app"
   password             = var.db_password
   parameter_group_name = "default.postgres13"
@@ -68,7 +68,7 @@ resource "aws_ecs_task_definition" "mbp_app_task" {
   container_definitions    = jsonencode([
     {
       name      = "mbp_app_container"
-      image     = "${aws_ecr_repository.app_repo.repository_url}:latest"
+      image     = "${aws_ecr_repository.mbp_app_repo.repository_url}:latest"
       cpu       = 256
       memory    = 512
       essential = true
@@ -89,12 +89,63 @@ resource "aws_ecs_task_definition" "mbp_app_task" {
 # ECS Service
 resource "aws_ecs_service" "mbp_app_ecs" {
   name            = "mbp_app_ecs"
-  cluster         = aws_ecs_cluster.app_cluster.id
-  task_definition = aws_ecs_task_definition.app_task.arn
+  cluster         = aws_ecs_cluster.mbp_ecs_cluster.id
+  task_definition = aws_ecs_task_definition.mbp_app_task.arn
   desired_count   = 1
-  launch_type     = "FARGATE"
-  network_configuration {
-    subnets         = ["subnet-12345678"] # Replace with your subnet IDs
-    security_groups = ["sg-12345678"]     # Replace with your security group IDs
+  launch_type     = "EC2"
+  load_balancer {
+    target_group_arn = aws_lb_target_group.mbp_app_tg.arn
+    container_name   = "mbp_app_container"
+    container_port   = 80
+  }
+  depends_on = [aws_lb_listener.mbp_app_listener]
+}
+
+# Load Balancer
+resource "aws_lb" "mbp_app_lb" {
+  name               = "mbp_app_lb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.mbp_app_sg.id]
+  subnets            = ["subnet-12345678", "subnet-87654321"]
+}
+
+# Load Balancer Target Group
+resource "aws_lb_target_group" "mbp_app_tg" {
+  name     = "mbp_app_tg"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = "vpc-12345678"
+}
+
+# Load Balancer Listener
+resource "aws_lb_listener" "mbp_app_listener" {
+  load_balancer_arn = aws_lb.mbp_app_lb.arn
+  port              = 80
+  protocol          = "HTTP"
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.mbp_app_tg.arn
+  }
+}
+
+# Security Group
+resource "aws_security_group" "mbp_app_sg" {
+  name        = "mbp_app_sg"
+  description = "Allow HTTP traffic"
+  vpc_id      = "vpc-12345678"
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
